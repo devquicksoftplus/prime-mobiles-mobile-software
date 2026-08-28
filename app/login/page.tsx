@@ -50,19 +50,10 @@ export default function LoginPage() {
             {/* Mobile Logo */}
             {/* Logo */}
             <div className="flex items-center justify-center gap-3 mb-8">
-              <Link href="/" className="flex items-center gap-3">
+              <div className="flex items-center gap-3">
                 <img src="/konnect-logo.png" alt="Konnect" className="h-24 w-auto" />
-              </Link>
+              </div>
             </div>
-
-            {/* Back link */}
-            <Link 
-              href="/"
-              className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to home
-            </Link>
 
             {/* Header */}
             <div className="space-y-2">
