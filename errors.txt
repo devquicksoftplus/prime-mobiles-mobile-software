@@ -1,0 +1,10 @@
+﻿components/job-card-form.tsx(85,9): error TS2322: Type 'string' is not assignable to type '"mobile" | "laptop" | "tablet" | "earbuds" | "smartwatch" | "others"'.
+components/job-card-form.tsx(110,9): error TS2322: Type 'string' is not assignable to type 'number'.
+components/job-cards-table.tsx(84,43): error TS2769: No overload matches this call.
+  Overload 1 of 4, '(value: string | number | Date): Date', gave the following error.
+    Argument of type 'string | Date | undefined' is not assignable to parameter of type 'string | number | Date'.
+      Type 'undefined' is not assignable to type 'string | number | Date'.
+  Overload 2 of 4, '(value: string | number): Date', gave the following error.
+    Argument of type 'string | Date | undefined' is not assignable to parameter of type 'string | number'.
+      Type 'undefined' is not assignable to type 'string | number'.
+components/Sidebar.tsx(98,68): error TS2339: Property 'username' does not exist on type 'User'.

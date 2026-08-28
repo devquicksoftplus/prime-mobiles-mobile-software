@@ -1,0 +1,239 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Sapphire Executive Theme - Light Mode */
+  --background: oklch(1 0 0);
+  /* Pure White */
+  --foreground: oklch(0.13 0.02 260);
+  /* Deep Slate */
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.13 0.02 260);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.13 0.02 260);
+
+  --primary: oklch(0.488 0.143 265.8);
+  /* Royal Blue */
+  --primary-foreground: oklch(0.98 0 0);
+  /* White */
+
+  --secondary: oklch(0.95 0.03 265);
+  /* Pale Ice Blue */
+  --secondary-foreground: oklch(0.35 0.1 265);
+  /* Deep Blue Text */
+
+  --muted: oklch(0.96 0.01 260);
+  --muted-foreground: oklch(0.55 0.03 260);
+
+  --accent: oklch(0.7 0.18 150);
+  /* Teal - for success states */
+  --accent-foreground: oklch(0.98 0 0);
+  /* White text on Teal */
+
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.985 0 0);
+
+  --border: oklch(0.92 0.02 260);
+  --input: oklch(0.92 0.02 260);
+  --ring: oklch(0.488 0.143 265.8);
+
+  /* Chart Colors - Professional & Distinct */
+  --chart-1: oklch(0.488 0.143 265.8);
+  /* Primary Blue */
+  --chart-2: oklch(0.60 0.15 180);
+  /* Teal/Cyan */
+  --chart-3: oklch(0.65 0.18 300);
+  /* Purple */
+  --chart-4: oklch(0.70 0.15 85);
+  /* Gold/Orange */
+  --chart-5: oklch(0.60 0.15 30);
+  /* Red/Rose */
+
+  --radius: 0.625rem;
+
+  /* Sidebar - Light */
+  --sidebar: oklch(0.98 0.01 260);
+  --sidebar-foreground: oklch(0.13 0.02 260);
+  --sidebar-primary: oklch(0.488 0.143 265.8);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.94 0.03 265);
+  --sidebar-accent-foreground: oklch(0.35 0.1 265);
+  --sidebar-border: oklch(0.90 0.02 260);
+  --sidebar-ring: oklch(0.488 0.143 265.8);
+
+  /* Custom colors for table rows (Adapted to Sapphire Theme) */
+  --row-selected: oklch(0.93 0.03 265);
+  /* Light blue tint */
+  --row-hover: oklch(0.97 0.01 260);
+  /* Very subtle cool grey/blue */
+}
+
+.dark {
+  /* Sapphire Executive Theme - Dark Mode */
+  --background: oklch(0.10 0.03 260);
+  /* Deep Navy/Slate Black */
+  --foreground: oklch(0.98 0.01 260);
+
+  --card: oklch(0.14 0.03 260);
+  --card-foreground: oklch(0.98 0.01 260);
+
+  --popover: oklch(0.14 0.03 260);
+  --popover-foreground: oklch(0.98 0.01 260);
+
+  --primary: oklch(0.6 0.15 265);
+  /* Lighter Blue for contrast */
+  --primary-foreground: oklch(0.10 0.03 260);
+
+  --secondary: oklch(0.25 0.05 265);
+  --secondary-foreground: oklch(0.98 0.01 260);
+
+  --muted: oklch(0.2 0.03 260);
+  --muted-foreground: oklch(0.7 0.03 260);
+
+  --accent: oklch(0.25 0.05 265);
+  --accent-foreground: oklch(0.98 0.01 260);
+
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.985 0 0);
+
+  --border: oklch(0.25 0.03 260);
+  --input: oklch(0.25 0.03 260);
+  --ring: oklch(0.6 0.15 265);
+
+  /* Chart Colors - Adapted for Dark Mode */
+  --chart-1: oklch(0.6 0.15 265);
+  --chart-2: oklch(0.65 0.15 180);
+  --chart-3: oklch(0.7 0.18 300);
+  --chart-4: oklch(0.75 0.15 85);
+  --chart-5: oklch(0.65 0.15 30);
+
+  /* Sidebar - Dark */
+  --sidebar: oklch(0.12 0.03 260);
+  --sidebar-foreground: oklch(0.98 0.01 260);
+  --sidebar-primary: oklch(0.6 0.15 265);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.22 0.04 265);
+  --sidebar-accent-foreground: oklch(0.98 0 0);
+  --sidebar-border: oklch(0.25 0.03 260);
+  --sidebar-ring: oklch(0.6 0.15 265);
+
+  /* Custom colors for table rows (Dark Mode) */
+  --row-selected: oklch(0.20 0.05 265);
+  --row-hover: oklch(0.16 0.03 260);
+}
+
+@theme inline {
+  --font-sans: var(--font-public-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --color-row-selected: var(--row-selected);
+  --color-row-hover: var(--row-hover);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* Custom animations */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes pulse-soft {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes scale-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s linear infinite;
+  background: linear-gradient(90deg,
+      var(--muted) 0%,
+      var(--muted-foreground)/10 50%,
+      var(--muted) 100%);
+  background-size: 200% 100%;
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.2s ease-out;
+}
+
+/* Smooth transitions for interactive elements */
+.transition-smooth {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}

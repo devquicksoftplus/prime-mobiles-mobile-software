@@ -1,0 +1,140 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ============================================
+    // HELPER FUNCTIONS
+    // ============================================
+    
+    // Check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Check if authenticated user owns this document/path
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // ============================================
+    // TOP-LEVEL COLLECTIONS
+    // ============================================
+
+    // Users collection - each user can only access their own document
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+      
+      // ============================================
+      // USER SUBCOLLECTIONS (Main data storage pattern)
+      // All data is stored under: users/{userId}/{collectionName}/{docId}
+      // ============================================
+      
+      // Job Cards - Service/repair records
+      match /jobCards/{jobCardId} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      // Customers - Customer information
+      match /customers/{customerId} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      // Devices - Device records
+      match /devices/{deviceId} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      // Invoices - Invoice records
+      match /invoices/{invoiceId} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      // Inventory/Products - Stock items
+      match /inventory/{productId} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      // Repairs - Repair records
+      match /repairs/{repairId} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      // Products (alternative collection name)
+      match /products/{productId} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      // Expenses - Expense tracking records
+      match /expenses/{expenseId} {
+        allow read, write: if isOwner(userId);
+      }
+      
+      // Budgets - Monthly budget records
+      match /budgets/{budgetId} {
+        allow read, write: if isOwner(userId);
+      }
+    }
+
+    // ============================================
+    // COMPANIES COLLECTION (Company Settings)
+    // Stored at: companies/{userId}
+    // Each user has one company document with their userId as the doc ID
+    // ============================================
+    match /companies/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    // ============================================
+    // FALLBACK RULES FOR TOP-LEVEL COLLECTIONS
+    // (In case any data is stored at top-level instead of subcollections)
+    // ============================================
+    
+    // Top-level jobCards collection (if used)
+    match /jobCards/{jobCardId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+    
+    // Top-level customers collection (if used)
+    match /customers/{customerId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+    
+    // Top-level products collection (if used)
+    match /products/{productId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+    
+    // Top-level inventory collection (if used)
+    match /inventory/{inventoryId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+    
+    // Top-level invoices collection (if used)
+    match /invoices/{invoiceId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+    
+    // Top-level repairs collection (if used)
+    match /repairs/{repairId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+    
+    // Top-level devices collection (if used)
+    match /devices/{deviceId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+  }
+}
