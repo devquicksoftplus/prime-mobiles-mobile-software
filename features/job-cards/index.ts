@@ -8,7 +8,6 @@ export { ProblemDiagnosisSection } from "./components/problem-diagnosis-section"
 export { CostEstimateSection } from "./components/cost-estimate-section"
 export { StatusBadge } from "./components/status-badge"
 export { CustomerHistoryCard } from "./components/customer-history-card"
-export { ImageUpgradeCard } from "./components/image-upgrade-card"
 
 // Re-export hooks
 export { useJobCards } from "./hooks/use-job-cards"

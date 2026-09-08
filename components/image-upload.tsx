@@ -3,13 +3,11 @@
 import { useState, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
-import { Upload, X, Image as ImageIcon, Loader2, Lock, Crown } from "lucide-react"
+import { Upload, X, Image as ImageIcon, Loader2 } from "lucide-react"
 import Image from "next/image"
 import { compressImage, formatFileSize } from "@/lib/image-compression"
 import { useAuth } from "@/contexts/auth-context"
 import { uploadToFirebaseStorage, deleteFromFirebaseStorage } from "@/lib/firebase-storage"
-import { useSubscription } from "@/hooks/use-subscription"
-import Link from "next/link"
 
 interface UploadedImage {
   url: string
@@ -21,54 +19,17 @@ interface ImageUploadProps {
   onChange: (images: UploadedImage[]) => void
   maxImages?: number
   disabled?: boolean
-  useSubscriptionLimit?: boolean // When true, uses subscription limit instead of maxImages
 }
 
 export function ImageUpload({ 
   value = [], 
   onChange, 
-  maxImages = 5, 
+  maxImages = 10, 
   disabled,
-  useSubscriptionLimit = false 
 }: ImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false)
   const [dragActive, setDragActive] = useState(false)
   const { isAuthenticated } = useAuth()
-  const { getMaxJobImages, canUploadJobImages, isSubscribed, planId } = useSubscription()
-
-  // Determine actual max images based on subscription or prop
-  const actualMaxImages = useSubscriptionLimit ? getMaxJobImages() : maxImages
-  const canUpload = useSubscriptionLimit ? canUploadJobImages() : true
-
-  // If subscription-based and user can't upload, show locked state
-  if (useSubscriptionLimit && !canUpload) {
-    return (
-      <div className="border-2 border-dashed border-amber-200 rounded-xl p-6 bg-amber-50/50">
-        <div className="flex flex-col items-center text-center gap-3">
-          <div className="relative">
-            <div className="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center">
-              <Lock className="w-6 h-6 text-amber-600" />
-            </div>
-            <div className="absolute -top-1 -right-1 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center">
-              <Crown className="w-3 h-3 text-white" />
-            </div>
-          </div>
-          <div>
-            <p className="text-sm font-medium text-amber-800">Image Uploads Locked</p>
-            <p className="text-xs text-amber-600 mt-1">
-              Upgrade to Pro or Elite to add device condition photos
-            </p>
-          </div>
-          <Link href="/subscription">
-            <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white">
-              <Crown className="w-3 h-3 mr-2" />
-              Upgrade Plan
-            </Button>
-          </Link>
-        </div>
-      </div>
-    )
-  }
 
   const handleUpload = useCallback(async (files: FileList | null) => {
     if (!files || files.length === 0) return
@@ -79,23 +40,12 @@ export function ImageUpload({
       return
     }
 
-    if (value.length >= actualMaxImages) {
-      // Show upgrade prompt for Pro users
-      if (useSubscriptionLimit && planId === 'pro') {
-        toast.error('Image limit reached!', {
-          description: 'Upgrade to Elite plan to upload up to 4 images per job.',
-          action: {
-            label: 'Upgrade',
-            onClick: () => window.location.href = '/subscription'
-          }
-        })
-      } else {
-        toast.error(`Maximum ${actualMaxImages} images allowed${useSubscriptionLimit ? ' on your plan' : ''}`)
-      }
+    if (value.length >= maxImages) {
+      toast.error(`Maximum ${maxImages} images allowed`)
       return
     }
 
-    const remainingSlots = actualMaxImages - value.length
+    const remainingSlots = maxImages - value.length
     const filesToUpload = Array.from(files).slice(0, remainingSlots)
 
     setIsUploading(true)
@@ -107,13 +57,13 @@ export function ImageUpload({
         const compressionResult = await compressImage(file, {
           maxWidth: 1920,
           maxHeight: 1080,
-          targetSizeKB: 150, // Optimal balance between quality and storage
+          targetSizeKB: 150,
           outputFormat: 'webp',
         })
 
         const compressedFile = compressionResult.file
         
-        // Log compression stats for debugging
+        // Log compression stats
         console.log(
           `[Image Compression] ${file.name}: ${formatFileSize(compressionResult.originalSize)} → ${formatFileSize(compressionResult.compressedSize)} (${compressionResult.compressionRatio.toFixed(1)}x reduction)`
         )
@@ -125,8 +75,6 @@ export function ImageUpload({
           url: result.url,
           publicId: result.path,
         })
-
-        console.log(`[Upload] Successfully uploaded: ${result.path}`)
       } catch (error) {
         console.error("Upload error:", error)
         const errorMessage = error instanceof Error ? error.message : "Unknown error"
@@ -140,21 +88,17 @@ export function ImageUpload({
     }
 
     setIsUploading(false)
-  }, [value, onChange, actualMaxImages, isAuthenticated, useSubscriptionLimit])
+  }, [value, onChange, maxImages, isAuthenticated])
 
   const handleRemove = useCallback(async (index: number) => {
     const imageToRemove = value[index]
     
     try {
-      // Delete directly from Firebase Storage (client-side)
       await deleteFromFirebaseStorage(imageToRemove.publicId)
-      console.log(`[Delete] Successfully deleted: ${imageToRemove.publicId}`)
     } catch (error) {
       console.error("Delete error:", error)
-      // Continue to remove from local state even if delete fails
     }
 
-    // Remove from local state
     const newImages = value.filter((_, i) => i !== index)
     onChange(newImages)
     toast.success("Image removed")
@@ -228,7 +172,7 @@ export function ImageUpload({
                   Drop images here or click to upload
                 </p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  JPEG, PNG, WebP, GIF • Max 10MB ({value.length}/{actualMaxImages} images)
+                  JPEG, PNG, WebP, GIF • Max 10MB ({value.length}/{maxImages} images)
                 </p>
               </div>
             </>
@@ -272,24 +216,6 @@ export function ImageUpload({
         </div>
       )}
 
-      {/* Upgrade Banner - Show when Pro user is at limit */}
-      {useSubscriptionLimit && planId === 'pro' && value.length >= actualMaxImages && (
-        <div className="flex items-center gap-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-          <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center shrink-0">
-            <Crown className="w-4 h-4 text-amber-600" />
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-medium text-amber-800">Want more photos?</p>
-            <p className="text-xs text-amber-600">Upgrade to Elite for 4 images per job</p>
-          </div>
-          <Link href="/subscription">
-            <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white text-xs">
-              Upgrade
-            </Button>
-          </Link>
-        </div>
-      )}
-
       {/* Empty State */}
       {value.length === 0 && !isUploading && (
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -300,4 +226,3 @@ export function ImageUpload({
     </div>
   )
 }
-

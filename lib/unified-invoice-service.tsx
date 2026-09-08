@@ -264,6 +264,7 @@ export async function downloadMultipleInvoices(jobCards: JobCardData[]): Promise
 
 // Share invoice on WhatsApp with PDF link
 export async function shareOnWhatsApp(jobCard: JobCardData): Promise<void> {
+  let loadingToastId: string | number | undefined
   try {
     const company = getCompanyInfo(jobCard)
     const costs = jobCard.costEstimate || {}
@@ -272,20 +273,33 @@ export async function shareOnWhatsApp(jobCard: JobCardData): Promise<void> {
     const balance = total - advance
     
     // 1. Notify user
-    toast.loading("Generating invoice PDF...")
+    loadingToastId = toast.loading("Generating invoice PDF...")
     
     // 2. Generate PDF Blob
-    const pdfBlob = await generateInvoiceBlob(jobCard)
+    let pdfBlob: Blob
+    try {
+      pdfBlob = await generateInvoiceBlob(jobCard)
+      console.log("[WhatsApp Share] PDF generated successfully. Blob size:", pdfBlob.size)
+    } catch (pdfError) {
+      console.error("[WhatsApp Share] Error generating PDF blob:", pdfError)
+      throw new Error(`Failed to generate PDF: ${pdfError instanceof Error ? pdfError.message : String(pdfError)}`)
+    }
     
     // 3. Create File object
     const filename = `Invoice_${jobCard.id.substring(0, 6)}_${Date.now()}.pdf`
     const pdfFile = new File([pdfBlob], filename, { type: "application/pdf" })
     
-    // 4. Upload to Firebase
-    toast.dismiss() // Dismiss loading
-    toast.loading("Uploading invoice to share...")
+    // 4. Upload to Firebase Storage
+    toast.loading("Uploading invoice to share...", { id: loadingToastId })
     
-    const uploadResult = await uploadToFirebaseStorage(pdfFile, "invoices")
+    let uploadResult
+    try {
+      uploadResult = await uploadToFirebaseStorage(pdfFile, "invoices")
+      console.log("[WhatsApp Share] Upload successful:", uploadResult.url)
+    } catch (uploadError) {
+      console.error("[WhatsApp Share] Firebase Storage upload error:", uploadError)
+      throw new Error(`Failed to upload to storage: ${uploadError instanceof Error ? uploadError.message : String(uploadError)}`)
+    }
     
     // 5. Try to create short URL, fall back to direct URL if it fails
     let invoiceUrl = uploadResult.url // Default to direct Firebase URL
@@ -300,8 +314,8 @@ export async function shareOnWhatsApp(jobCard: JobCardData): Promise<void> {
       await setDoc(doc(db, "invoiceLinks", shortId), {
         pdfUrl: uploadResult.url,
         jobCardId: jobCard.id,
-        customerName: jobCard.customerName,
-        shopName: company.name,
+        customerName: jobCard.customerName || "Customer",
+        shopName: company.name || "Shop",
         createdAt: new Date().toISOString(),
       })
       
@@ -313,74 +327,65 @@ export async function shareOnWhatsApp(jobCard: JobCardData): Promise<void> {
       const customerSlug = (jobCard.customerName || "customer").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
       
       invoiceUrl = `${baseUrl}/invoice/${shopSlug}/${customerSlug}/${shortId}`
-      console.log("[WhatsApp] Using custom URL:", invoiceUrl)
+      console.log("[WhatsApp Share] Using short URL:", invoiceUrl)
     } catch (linkError) {
-      console.warn("[WhatsApp] Could not create short URL, using direct link:", linkError)
+      console.warn("[WhatsApp Share] Could not register short link in Firestore, falling back to direct PDF URL:", linkError)
       // Keep using uploadResult.url as fallback
     }
     
-    toast.dismiss() // Dismiss uploading
+    toast.dismiss(loadingToastId)
     toast.success("Ready to share!")
     
-    // 6. Construct Message with Link
-    const statusLabel = jobCard.status === "delivered" ? "Delivered" : "Ready"
-    
-    let message = `*${company.name}*
+    // 6. Construct Message with Link matching requested format
+    const message = `Hello ${jobCard.customerName || "Customer"},
 
-📄 *SERVICE INVOICE*
+Your service invoice is ready.
 
-*Customer:* ${jobCard.customerName || "N/A"}
-*Device:* ${jobCard.deviceInfo?.brand || ""} ${jobCard.deviceInfo?.model || ""}
-*Status:* ${statusLabel}
-
-💰 *Total:* ${formatCurrency(total)}
-💵 *Balance:* ${formatCurrency(balance)}
-
-🔗 *Download Invoice:*
+You can view/download it here:
 ${invoiceUrl}
 
-📞 ${company.phone}`
+Thank you,
+${company.name}`
 
     const encodedMessage = encodeURIComponent(message)
     const phoneNumber = jobCard.phone?.replace(/\D/g, "") || ""
     
-    // Format phone number for India
+    // Format phone number for India (10-digit adds country code 91)
     let formattedPhone = phoneNumber
     if (phoneNumber && phoneNumber.length === 10) {
       formattedPhone = "91" + phoneNumber
     }
     
-    // Detect if device is mobile
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
-    )
+    // Use https://api.whatsapp.com/send which reliably opens WhatsApp web on desktop and the app on mobile
+    const whatsappUrl = formattedPhone 
+      ? `https://api.whatsapp.com/send?phone=${formattedPhone}&text=${encodedMessage}`
+      : `https://api.whatsapp.com/send?text=${encodedMessage}`
     
-    let whatsappUrl: string
-    if (isMobile) {
-      whatsappUrl = formattedPhone
-        ? `whatsapp://send?phone=${formattedPhone}&text=${encodedMessage}`
-        : `whatsapp://send?text=${encodedMessage}`
-    } else {
-      whatsappUrl = formattedPhone
-        ? `https://web.whatsapp.com/send?phone=${formattedPhone}&text=${encodedMessage}`
-        : `https://web.whatsapp.com/send?text=${encodedMessage}`
-    }
-
-    // Open WhatsApp
+    console.log("[WhatsApp Share] Opening WhatsApp URL:", whatsappUrl)
     window.open(whatsappUrl, "_blank")
     
   } catch (error) {
-    console.error("Error sharing invoice:", error)
-    toast.dismiss()
-    toast.error("Failed to share invoice")
+    console.error("[WhatsApp Share] Critical error during share process:", error)
+    if (loadingToastId) {
+      toast.dismiss(loadingToastId)
+    }
+    const errorMessage = error instanceof Error ? error.message : "Failed to share invoice"
+    toast.error(errorMessage)
     
-    // Fallback to just text if upload fails
+    // Fallback: Open WhatsApp with invoice text details even if PDF upload fails
     const costs = jobCard.costEstimate || {}
     const total = (costs.laborCost || 0) + (costs.partsCost || 0) + (costs.serviceCost || 0)
     const balance = total - (jobCard.advanceReceived || 0)
     
-    const message = `Invoice for ${jobCard.customerName || "Customer"}\nTotal: ${formatCurrency(total)}\nBalance: ${formatCurrency(balance)}`
-    const encodedMessage = encodeURIComponent(message)
-    window.open(`https://web.whatsapp.com/send?text=${encodedMessage}`, "_blank")
+    const fallbackMsg = `*${jobCard.customerName || "Customer"}* - Service Details\nDevice: ${jobCard.deviceInfo?.brand || ""} ${jobCard.deviceInfo?.model || ""}\nTotal: ${formatCurrency(total)}\nBalance: ${formatCurrency(balance)}`
+    const encoded = encodeURIComponent(fallbackMsg)
+    const phoneNumber = jobCard.phone?.replace(/\D/g, "") || ""
+    const formattedPhone = phoneNumber.length === 10 ? "91" + phoneNumber : phoneNumber
+    
+    const fallbackUrl = formattedPhone
+      ? `https://api.whatsapp.com/send?phone=${formattedPhone}&text=${encoded}`
+      : `https://api.whatsapp.com/send?text=${encoded}`
+      
+    window.open(fallbackUrl, "_blank")
   }
 }

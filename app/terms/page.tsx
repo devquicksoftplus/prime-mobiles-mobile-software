@@ -72,17 +72,10 @@ export default function TermsOfServicePage() {
           </section>
 
           <section className="mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">4. Subscription and Payments</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">4. Software License & Usage</h2>
             <p className="text-gray-600 leading-relaxed mb-4">
-              Konnect offers various subscription plans. By subscribing to a paid plan:
+              Konnect is provided as business management software for your organization. You agree to use the Service in compliance with applicable local laws and standard commercial practices.
             </p>
-            <ul className="list-disc list-inside text-gray-600 space-y-2 mb-4">
-              <li>You agree to pay all fees associated with your selected plan</li>
-              <li>Subscription fees are billed in advance on a monthly or annual basis</li>
-              <li>All payments are non-refundable unless otherwise stated</li>
-              <li>We reserve the right to modify pricing with 30 days notice</li>
-              <li>Free trial periods, if offered, convert to paid subscriptions automatically</li>
-            </ul>
           </section>
 
           <section className="mb-8">

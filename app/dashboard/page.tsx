@@ -63,14 +63,12 @@ import {
   Edit,
   FileText,
   Trash2,
-  MoreVertical
+  MoreVertical,
+  Share2,
 } from "lucide-react"
 import { toast } from "sonner"
-import { downloadInvoice } from "@/lib/unified-invoice-service"
-
-// Tiered Dashboards
-import { BasicDashboard } from "@/components/dashboards/basic-dashboard"
-import { ProDashboard } from "@/components/dashboards/pro-dashboard"
+// Unified Invoice Service
+import { downloadInvoice, shareOnWhatsApp } from "@/lib/unified-invoice-service"
 
 interface JobCard {
   id: string
@@ -330,32 +328,7 @@ export default function DashboardPage() {
     }
   }
 
-  // TIER-BASED DASHBOARD ROUTING
-  // Get the user's subscription plan
-  const plan = user?.subscription?.planId || null
-  const subscriptionStatus = user?.subscription?.status
-  const isActive = subscriptionStatus === 'active' || subscriptionStatus === 'trial'
-
-  // Route to Basic or Pro dashboard based on plan
-  if (isActive && plan === 'basic') {
-    return (
-      <PageLayout>
-        <BasicDashboard />
-      </PageLayout>
-    )
-  }
-  
-  if (isActive && plan === 'pro') {
-    return (
-      <PageLayout>
-        <ProDashboard />
-      </PageLayout>
-    )
-  }
-
-  // Elite plan (or no plan = show full dashboard as demo)
-  // The full Elite dashboard continues below...
-
+  // Always load the full Dashboard (All Elite-level analytics & metrics enabled by default)
   return (
     <PageLayout>
       <div className="min-h-screen bg-transparent p-6 space-y-8">
@@ -366,12 +339,6 @@ export default function DashboardPage() {
               <h1 className="text-3xl font-bold tracking-tight text-slate-900">Dashboard</h1>
               <p className="text-slate-500 mt-1">Overview of your service center performance.</p>
             </div>
-            {plan === 'elite' && (
-              <Badge className="bg-gradient-to-r from-amber-500 to-yellow-500 text-white border-0 shadow-lg">
-                <Crown className="w-3 h-3 mr-1" />
-                Elite
-              </Badge>
-            )}
           </div>
           <div className="flex items-center gap-2">
             <Select value={timeRange} onValueChange={setTimeRange}>
@@ -719,6 +686,68 @@ export default function DashboardPage() {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => {
+                              const jobCardWithCompanyInfo = {
+                                ...job,
+                                deviceInfo: {
+                                  type: job.deviceInfo?.type || 'Device',
+                                  brand: job.deviceInfo?.brand || 'Unknown',
+                                  model: job.deviceInfo?.model || '',
+                                },
+                                companyInfo: company ? {
+                                  name: company.companyName,
+                                  tagline: company.tagline,
+                                  phone: company.phone,
+                                  alternatePhone: company.alternatePhone,
+                                  email: company.email,
+                                  address: company.address,
+                                  city: company.city,
+                                  state: company.state,
+                                  pincode: company.pincode,
+                                  gstNumber: company.gstNumber,
+                                  logoUrl: company.logoUrl,
+                                  website: company.website,
+                                  selectedTerms: company.selectedTerms,
+                                  customTerms: company.customTerms,
+                                  termsAndConditions: company.termsAndConditions,
+                                } : undefined
+                              }
+                              downloadInvoice(jobCardWithCompanyInfo)
+                            }}>
+                              <FileText className="w-4 h-4 mr-2" />
+                              Download Invoice
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => {
+                              const jobCardWithCompanyInfo = {
+                                ...job,
+                                deviceInfo: {
+                                  type: job.deviceInfo?.type || 'Device',
+                                  brand: job.deviceInfo?.brand || 'Unknown',
+                                  model: job.deviceInfo?.model || '',
+                                },
+                                companyInfo: company ? {
+                                  name: company.companyName,
+                                  tagline: company.tagline,
+                                  phone: company.phone,
+                                  alternatePhone: company.alternatePhone,
+                                  email: company.email,
+                                  address: company.address,
+                                  city: company.city,
+                                  state: company.state,
+                                  pincode: company.pincode,
+                                  gstNumber: company.gstNumber,
+                                  logoUrl: company.logoUrl,
+                                  website: company.website,
+                                  selectedTerms: company.selectedTerms,
+                                  customTerms: company.customTerms,
+                                  termsAndConditions: company.termsAndConditions,
+                                } : undefined
+                              }
+                              shareOnWhatsApp(jobCardWithCompanyInfo)
+                            }}>
+                              <Share2 className="w-4 h-4 mr-2" />
+                              Share on WhatsApp
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleEditJob(job.id)}>
                               <Edit className="w-4 h-4 mr-2" />
                               Edit
@@ -950,45 +979,83 @@ export default function DashboardPage() {
                   <p className="text-xs text-slate-500 mb-3">
                     Download invoice using your selected template from Settings → Templates
                   </p>
-                  <Button 
-                    size="sm"
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                    onClick={() => {
-                      // Spread all job properties (including conditionImages) and add company info
-                      const jobCardWithCompanyInfo = {
-                        ...selectedJob,
-                        // Ensure deviceInfo has proper fallback values
-                        deviceInfo: {
-                          type: selectedJob.deviceInfo?.type || 'Device',
-                          brand: selectedJob.deviceInfo?.brand || 'Unknown',
-                          model: selectedJob.deviceInfo?.model || '',
-                        },
-                        // Add company info for invoice generation
-                        companyInfo: company ? {
-                          name: company.companyName,
-                          tagline: company.tagline,
-                          phone: company.phone,
-                          alternatePhone: company.alternatePhone,
-                          email: company.email,
-                          address: company.address,
-                          city: company.city,
-                          state: company.state,
-                          pincode: company.pincode,
-                          gstNumber: company.gstNumber,
-                          logoUrl: company.logoUrl,
-                          website: company.website,
-                          selectedTerms: company.selectedTerms,
-                          customTerms: company.customTerms,
-                          termsAndConditions: company.termsAndConditions,
-                        } : undefined
-                      }
-                      downloadInvoice(jobCardWithCompanyInfo)
-                      toast.success("Invoice download started!")
-                    }}
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Download Invoice
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      size="sm"
+                      className="bg-blue-600 hover:bg-blue-700 text-white flex-1"
+                      onClick={() => {
+                        // Spread all job properties (including conditionImages) and add company info
+                        const jobCardWithCompanyInfo = {
+                          ...selectedJob,
+                          // Ensure deviceInfo has proper fallback values
+                          deviceInfo: {
+                            type: selectedJob.deviceInfo?.type || 'Device',
+                            brand: selectedJob.deviceInfo?.brand || 'Unknown',
+                            model: selectedJob.deviceInfo?.model || '',
+                          },
+                          // Add company info for invoice generation
+                          companyInfo: company ? {
+                            name: company.companyName,
+                            tagline: company.tagline,
+                            phone: company.phone,
+                            alternatePhone: company.alternatePhone,
+                            email: company.email,
+                            address: company.address,
+                            city: company.city,
+                            state: company.state,
+                            pincode: company.pincode,
+                            gstNumber: company.gstNumber,
+                            logoUrl: company.logoUrl,
+                            website: company.website,
+                            selectedTerms: company.selectedTerms,
+                            customTerms: company.customTerms,
+                            termsAndConditions: company.termsAndConditions,
+                          } : undefined
+                        }
+                        downloadInvoice(jobCardWithCompanyInfo)
+                        toast.success("Invoice download started!")
+                      }}
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Download Invoice
+                    </Button>
+                    <Button 
+                      size="sm"
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => {
+                        const jobCardWithCompanyInfo = {
+                          ...selectedJob,
+                          deviceInfo: {
+                            type: selectedJob.deviceInfo?.type || 'Device',
+                            brand: selectedJob.deviceInfo?.brand || 'Unknown',
+                            model: selectedJob.deviceInfo?.model || '',
+                          },
+                          companyInfo: company ? {
+                            name: company.companyName,
+                            tagline: company.tagline,
+                            phone: company.phone,
+                            alternatePhone: company.alternatePhone,
+                            email: company.email,
+                            address: company.address,
+                            city: company.city,
+                            state: company.state,
+                            pincode: company.pincode,
+                            gstNumber: company.gstNumber,
+                            logoUrl: company.logoUrl,
+                            website: company.website,
+                            selectedTerms: company.selectedTerms,
+                            customTerms: company.customTerms,
+                            termsAndConditions: company.termsAndConditions,
+                          } : undefined
+                        }
+                        shareOnWhatsApp(jobCardWithCompanyInfo)
+                      }}
+                    >
+                      <Share2 className="w-4 h-4 mr-2" />
+                      WhatsApp
+                    </Button>
+                  </div>
                 </div>
               </div>
             )}

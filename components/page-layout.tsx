@@ -1,8 +1,5 @@
-"use client"
-
 import { Sidebar } from "@/components/Sidebar"
 import { SidebarProvider, useSidebar } from "@/contexts/sidebar-context"
-import { EmailVerificationBanner } from "@/components/email-verification-banner"
 import { cn } from "@/lib/utils"
 
 interface PageLayoutProps {
@@ -22,9 +19,6 @@ function PageLayoutContent({ children }: PageLayoutProps) {
           "lg:ml-0"
         )}
       >
-        {/* Email Verification Banner */}
-        <EmailVerificationBanner />
-        
         {/* Gradient background matching the Sapphire Executive design */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/10 -z-10" />
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gradient-to-bl from-primary/10 via-transparent to-transparent rounded-full blur-3xl -z-10" />

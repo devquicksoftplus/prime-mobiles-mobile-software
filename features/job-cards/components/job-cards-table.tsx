@@ -197,7 +197,7 @@ export function JobCardsTable() {
   ) as ExtendedJobCard[]
 
   const handleRowClick = (item: ExtendedJobCard) => {
-    router.push(`/job-cards/${item.id}`)
+    setSelectedItem(item)
   }
 
   if (isLoading) {

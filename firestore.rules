@@ -136,5 +136,11 @@ service cloud.firestore {
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
       allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }
+
+    // Public invoice sharing links (/invoice/shop/customer/id)
+    match /invoiceLinks/{shortId} {
+      allow read: if true;
+      allow write: if isAuthenticated();
+    }
   }
 }

@@ -5,7 +5,7 @@ import { PageLayout } from '@/components/page-layout'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Check, Palette, Sparkles, Info, Lock, Crown } from 'lucide-react'
+import { Check, Palette, Sparkles, Info } from 'lucide-react'
 import { 
   getAllTemplates, 
   DEFAULT_TEMPLATE, 
@@ -13,17 +13,12 @@ import {
   TemplateInfo,
 } from '@/features/invoice-templates'
 import { toast } from 'sonner'
-import { useSubscription } from '@/hooks/use-subscription'
-import Link from 'next/link'
 
 const STORAGE_KEY = 'selected-invoice-template'
 
 export default function TemplatesPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateId>(DEFAULT_TEMPLATE)
   const [templates] = useState<TemplateInfo[]>(getAllTemplates())
-  const { getMaxTemplates, isSubscribed, currentPlan } = useSubscription()
-
-  const maxTemplates = getMaxTemplates()
 
   // Load saved template from localStorage on mount
   useEffect(() => {
@@ -33,15 +28,7 @@ export default function TemplatesPage() {
     }
   }, [templates])
 
-  const handleSelectTemplate = (id: TemplateId, index: number) => {
-    // Check if template is locked
-    if (index >= maxTemplates) {
-      toast.error('Template locked', {
-        description: `Upgrade your plan to unlock more templates. You have access to ${maxTemplates} templates.`
-      })
-      return
-    }
-    
+  const handleSelectTemplate = (id: TemplateId) => {
     setSelectedTemplate(id)
     localStorage.setItem(STORAGE_KEY, id)
     toast.success('Template selected!', {
@@ -87,14 +74,8 @@ export default function TemplatesPage() {
               <div className="flex items-center gap-2">
                 <Badge variant="outline" className="text-sm px-4 py-2 bg-white shadow-sm">
                   <Sparkles className="w-3.5 h-3.5 mr-1.5 text-primary" />
-                  {maxTemplates} of {templates.length} Templates
+                  {templates.length} Templates Available
                 </Badge>
-                {currentPlan && (
-                  <Badge className="bg-amber-100 text-amber-700 border-amber-200">
-                    <Crown className="w-3 h-3 mr-1" />
-                    {currentPlan.name}
-                  </Badge>
-                )}
               </div>
             </div>
 
@@ -143,30 +124,22 @@ export default function TemplatesPage() {
               </h2>
               <p className="text-sm text-slate-500">
                 Click on any template to preview and select
-                {maxTemplates < templates.length && (
-                  <span className="text-amber-600 ml-1">
-                    ({templates.length - maxTemplates} templates locked on your plan)
-                  </span>
-                )}
               </p>
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {templates.map((template, index) => {
+              {templates.map((template) => {
                 const isSelected = selectedTemplate === template.id
-                const isLocked = index >= maxTemplates
                 
                 return (
                   <Card 
                     key={template.id}
                     className={`group overflow-hidden transition-all duration-300 cursor-pointer ${
-                      isLocked 
-                        ? 'opacity-60 hover:opacity-80' 
-                        : isSelected 
-                          ? 'ring-2 ring-primary ring-offset-2 shadow-lg' 
-                          : 'hover:shadow-xl hover:-translate-y-1'
+                      isSelected 
+                        ? 'ring-2 ring-primary ring-offset-2 shadow-lg' 
+                        : 'hover:shadow-xl hover:-translate-y-1'
                     }`}
-                    onClick={() => handleSelectTemplate(template.id as TemplateId, index)}
+                    onClick={() => handleSelectTemplate(template.id as TemplateId)}
                   >
                     {/* Template Preview */}
                     <div 
@@ -184,7 +157,7 @@ export default function TemplatesPage() {
                       </div>
 
                       {/* Mini Invoice Preview */}
-                      <div className={`absolute inset-4 bg-white/98 backdrop-blur-sm rounded-xl shadow-2xl p-4 transform group-hover:scale-[1.02] transition-all duration-300 ${isLocked ? 'filter blur-[1px]' : ''}`}>
+                      <div className="absolute inset-4 bg-white/98 backdrop-blur-sm rounded-xl shadow-2xl p-4 transform group-hover:scale-[1.02] transition-all duration-300">
                         <div className="flex justify-between items-start mb-3">
                           <div className="w-10 h-10 rounded-lg shadow-md" style={{ backgroundColor: template.primaryColor }} />
                           <div className="text-right">
@@ -221,15 +194,6 @@ export default function TemplatesPage() {
                           <Check className="w-5 h-5 text-primary" strokeWidth={3} />
                         </div>
                       )}
-                      
-                      {/* Locked Indicator */}
-                      {isLocked && (
-                        <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                          <div className="bg-white rounded-xl p-3 shadow-xl">
-                            <Lock className="w-6 h-6 text-amber-600" />
-                          </div>
-                        </div>
-                      )}
                     </div>
 
                     {/* Template Info */}
@@ -239,55 +203,35 @@ export default function TemplatesPage() {
                           <h3 className="font-semibold text-slate-900 leading-tight">
                             {template.name}
                           </h3>
-                          {isLocked ? (
-                            <Badge className="bg-amber-100 text-amber-700 border-amber-200 text-[10px]">
-                              <Lock className="w-2.5 h-2.5 mr-1" />
-                              Locked
-                            </Badge>
-                          ) : (
-                            <Badge variant="outline" className={`text-[10px] shrink-0 ${getStyleBadgeColor(template.style)}`}>
-                              {template.style}
-                            </Badge>
-                          )}
+                          <Badge variant="outline" className={`text-[10px] shrink-0 ${getStyleBadgeColor(template.style)}`}>
+                            {template.style}
+                          </Badge>
                         </div>
                         <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">
                           {template.description}
                         </p>
                       </div>
                       
-                      {isLocked ? (
-                        <Link href="/subscription" className="block">
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            className="w-full h-9 text-sm font-medium border-amber-300 text-amber-700 hover:bg-amber-50"
-                          >
-                            <Crown className="w-3.5 h-3.5 mr-1.5" />
-                            Upgrade to Unlock
-                          </Button>
-                        </Link>
-                      ) : (
-                        <Button 
-                          size="sm" 
-                          variant={isSelected ? "default" : "outline"}
-                          className={`w-full h-9 text-sm font-medium transition-all ${
-                            isSelected ? 'shadow-md' : ''
-                          }`}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleSelectTemplate(template.id as TemplateId, index)
-                          }}
-                        >
-                          {isSelected ? (
-                            <>
-                              <Check className="w-4 h-4 mr-1.5" />
-                              Active Template
-                            </>
-                          ) : (
-                            'Select Template'
-                          )}
-                        </Button>
-                      )}
+                      <Button 
+                        size="sm" 
+                        variant={isSelected ? "default" : "outline"}
+                        className={`w-full h-9 text-sm font-medium transition-all ${
+                          isSelected ? 'shadow-md' : ''
+                        }`}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleSelectTemplate(template.id as TemplateId)
+                        }}
+                      >
+                        {isSelected ? (
+                          <>
+                            <Check className="w-4 h-4 mr-1.5" />
+                            Active Template
+                          </>
+                        ) : (
+                          'Select Template'
+                        )}
+                      </Button>
                     </CardContent>
                   </Card>
                 )
@@ -309,11 +253,6 @@ export default function TemplatesPage() {
                   <p className="text-sm text-slate-600 leading-relaxed">
                     Your selected template will be automatically applied when generating invoices from job cards.
                     The template preference is saved locally on your device and will persist across sessions.
-                    {maxTemplates < templates.length && (
-                      <span className="block mt-2 text-amber-700">
-                        <strong>Upgrade your plan</strong> to unlock all {templates.length} premium templates.
-                      </span>
-                    )}
                   </p>
                 </div>
               </div>
@@ -324,4 +263,3 @@ export default function TemplatesPage() {
     </PageLayout>
   )
 }
-

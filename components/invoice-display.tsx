@@ -6,10 +6,9 @@ import type { Invoice } from "@/lib/types" // Use frontend types
 
 interface InvoiceDisplayProps {
   invoice: Invoice
-  onPay?: () => void
 }
 
-export function InvoiceDisplay({ invoice, onPay }: InvoiceDisplayProps) {
+export function InvoiceDisplay({ invoice }: InvoiceDisplayProps) {
   // Safe date formatting
   const formatDate = (dateString: string) => {
     try {
@@ -87,13 +86,6 @@ export function InvoiceDisplay({ invoice, onPay }: InvoiceDisplayProps) {
             </div>
           </div>
         </div>
-
-        {/* Pay Button */}
-        {invoice.balanceDue > 0 && onPay && (
-          <Button onClick={onPay} className="w-full">
-            Pay ₹{invoice.balanceDue.toFixed(2)} with Stripe
-          </Button>
-        )}
       </div>
     </Card>
   )

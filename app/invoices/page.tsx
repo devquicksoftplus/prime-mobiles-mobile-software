@@ -35,10 +35,7 @@ export default function InvoicesPage() {
     fetchInvoices()
   }, [isAuthenticated, getInvoices])
 
-  const handlePay = async (invoiceId: string) => {
-    console.log("Processing payment for invoice:", invoiceId)
-    // Add Stripe payment logic here
-  }
+
 
   if (loading) {
     return (
@@ -72,7 +69,6 @@ export default function InvoicesPage() {
               <div key={invoice.id} className="border rounded-lg overflow-hidden">
                 <InvoiceDisplay 
                   invoice={invoice} 
-                  onPay={invoice.balanceDue > 0 ? () => handlePay(invoice.id!) : undefined}
                 />
               </div>
             ))}

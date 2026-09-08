@@ -128,13 +128,4 @@ export interface MonthlyBudget {
   createdBy: string
   createdAt: string
   updatedAt?: string
-}
-
-// User Subscription Interface
-export interface UserSubscription {
-  planId: "basic" | "pro" | "elite" | null
-  status: "active" | "expired" | "cancelled" | "trial"
-  startDate: string
-  endDate: string
-  paymentId?: string
-}
+}

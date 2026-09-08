@@ -23,21 +23,8 @@ import { getCategoryOptions, formatCurrency } from "@/features/expenses/lib/expe
 import { Expense, ExpenseCategory } from "@/lib/types"
 import { ProtectedRoute } from "@/components/protected-route"
 import { PageLayout } from "@/components/page-layout"
-import { useSubscription } from "@/hooks/use-subscription"
-import { UpgradeAlert } from "@/components/upgrade-alert"
-
 function ExpensesContent() {
-  const { canAccessExpenses } = useSubscription()
   const { expenses, isLoading, addExpense, updateExpense, deleteExpense } = useExpenses()
-  
-  // Check subscription access
-  if (!canAccessExpenses()) {
-    return (
-      <div className="flex-1 flex items-center justify-center p-8">
-        <UpgradeAlert feature="Expense Tracker" requiredPlan="pro" />
-      </div>
-    )
-  }
   
   // Month selection state
   const [selectedMonth, setSelectedMonth] = useState(() => {

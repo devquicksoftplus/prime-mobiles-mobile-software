@@ -60,15 +60,10 @@ const navigation = [
 ]
 
 const settingsNavigation = [
-  { name: "Subscription", href: "/subscription", icon: Crown },
   { name: "Profile", href: "/profile", icon: UserCircle },
   { name: "Company Details", href: "/company-settings", icon: Building2 },
 ]
 
-// Admin-only navigation (shown only when user.role === 'admin')
-const adminNavigation = [
-  { name: "Admin Portal", href: "/admin/dashboard", icon: Shield },
-]
 
 export function Sidebar() {
   const pathname = usePathname()
@@ -306,66 +301,7 @@ export function Sidebar() {
               )
             }
 
-            return linkContent
           })}
-
-          {/* Admin Navigation - Only for admins */}
-          {user?.role === "admin" && (
-            <>
-              <div className={cn(
-                "pt-4 mt-4 border-t border-accent/30",
-                isCollapsed && "pt-2 mt-2"
-              )}>
-                {!isCollapsed && (
-                  <span className="px-3 text-xs font-medium text-accent uppercase tracking-wider">
-                    Admin
-                  </span>
-                )}
-              </div>
-
-              {adminNavigation.map((item) => {
-                const Icon = item.icon
-                const isActive = pathname === item.href || pathname.startsWith(item.href.replace("/dashboard", ""))
-                
-                const linkContent = (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => {
-                      if (window.innerWidth < 1024) toggle()
-                    }}
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-3 rounded-xl transition-all",
-                      isActive
-                        ? "bg-accent/20 text-accent font-bold"
-                        : "text-accent/80 hover:bg-accent/10 hover:text-accent",
-                      isCollapsed && "justify-center px-0"
-                    )}
-                  >
-                    <Icon className="w-5 h-5 flex-shrink-0" />
-                    {!isCollapsed && (
-                      <span className="text-sm whitespace-nowrap overflow-hidden">{item.name}</span>
-                    )}
-                  </Link>
-                )
-
-                if (isCollapsed) {
-                  return (
-                    <Tooltip key={item.href}>
-                      <TooltipTrigger asChild>
-                        {linkContent}
-                      </TooltipTrigger>
-                      <TooltipContent side="right" className="font-medium bg-accent/10 text-accent border-accent/20">
-                        {item.name}
-                      </TooltipContent>
-                    </Tooltip>
-                  )
-                }
-
-                return linkContent
-              })}
-            </>
-          )}
         </nav>
 
         {/* User Profile */}

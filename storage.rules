@@ -1,0 +1,18 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Mobile billing files (images and invoices)
+    match /mobilebilling/{allPaths=**} {
+      // Anyone can read (for sharing invoices and loading condition photos)
+      allow read: if true;
+      // Authenticated users can upload and delete
+      allow write: if request.auth != null;
+    }
+    
+    // Default fallback
+    match /{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+  }
+}

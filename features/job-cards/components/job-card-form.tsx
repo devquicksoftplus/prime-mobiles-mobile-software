@@ -13,10 +13,9 @@ import { jobCardFormSchema, type JobCardFormData } from "@/lib/validations"
 import { CustomerInfoSection } from "./customer-info-section"
 import { DeviceInfoSection } from "./device-info-section"
 import { ProblemDiagnosisSection } from "./problem-diagnosis-section"
-import { CostEstimateSection } from "./cost-estimate-section"
 import { CustomerHistoryCard } from "./customer-history-card"
-import { ImageUpgradeCard } from "./image-upgrade-card"
 import { User, Smartphone, Wrench, IndianRupee, CheckCircle2, Sparkles } from "lucide-react"
+import { CostEstimateSection } from "./cost-estimate-section";
 import { cn } from "@/lib/utils"
 
 interface UploadedImage {
@@ -219,13 +218,13 @@ export function JobCardForm({ onSuccess, onFormChange, initialData, mode = "crea
           try {
             // Get all inventory items
             const inventoryItems = await firebaseService.getAll(user.uid, COLLECTIONS.INVENTORY)
-            
+
             // For each required part, find and reduce quantity
             for (const partName of jobCardData.requiredParts) {
               const inventoryItem = inventoryItems.find(
                 (item: any) => item.partName.toLowerCase() === partName.toLowerCase()
               ) as (any & { id: string; partName: string; quantity: number }) | undefined
-              
+
               if (inventoryItem && inventoryItem.id) {
                 const currentQty = inventoryItem.quantity || 0
                 if (currentQty > 0) {
@@ -284,12 +283,12 @@ export function JobCardForm({ onSuccess, onFormChange, initialData, mode = "crea
                   <User className="w-5 h-5 text-primary" />
                   Customer Information
                 </h2>
-                <CustomerInfoSection 
-                  form={form} 
+                <CustomerInfoSection
+                  form={form}
                   onCustomerPhoneChange={setSelectedCustomerPhone}
                 />
               </div>
-              
+
               {/* Section 2: Device Details */}
               <div>
                 <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
@@ -303,7 +302,7 @@ export function JobCardForm({ onSuccess, onFormChange, initialData, mode = "crea
                   isLoading={isLoading}
                 />
               </div>
-              
+
               {/* Section 3: Problem & Diagnosis */}
               <div>
                 <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
@@ -312,7 +311,7 @@ export function JobCardForm({ onSuccess, onFormChange, initialData, mode = "crea
                 </h2>
                 <ProblemDiagnosisSection form={form} />
               </div>
-              
+
               {/* Section 4: Cost Estimate */}
               <div>
                 <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
@@ -323,9 +322,9 @@ export function JobCardForm({ onSuccess, onFormChange, initialData, mode = "crea
               </div>
 
               {/* Submit Button */}
-              <Button 
-                type="submit" 
-                disabled={isLoading} 
+              <Button
+                type="submit"
+                disabled={isLoading}
                 size="lg"
                 className="w-full h-12 text-base font-semibold gap-2"
               >
@@ -345,27 +344,18 @@ export function JobCardForm({ onSuccess, onFormChange, initialData, mode = "crea
                   </>
                 )}
               </Button>
-              
-              {/* Image Upgrade Card - Mobile Only (below submit button) */}
-              <div className="lg:hidden mt-4">
-                <ImageUpgradeCard />
-              </div>
             </form>
           </Form>
         </Card>
       </div>
-      
+
       {/* Sidebar - Desktop: Right side with sticky positioning */}
       <div className="w-full lg:w-80 shrink-0 order-first lg:order-last">
         <div className="lg:sticky lg:top-4 flex flex-col gap-4">
-          <CustomerHistoryCard 
-            customerPhone={selectedCustomerPhone} 
+          <CustomerHistoryCard
+            customerPhone={selectedCustomerPhone}
             excludeJobId={mode === "edit" ? initialData?.id : null}
           />
-          {/* Image Upgrade Card - Desktop Only (in sidebar) */}
-          <div className="hidden lg:block">
-            <ImageUpgradeCard />
-          </div>
         </div>
       </div>
     </div>
